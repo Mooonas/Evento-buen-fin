@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Ruleta del Buen Fin · Mini Bodegas Panamericana</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Canvas Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          rose: {
+            DEFAULT: '#e91e63',
+            dark: '#ad1457',
+            light: '#f8bbd0',
+            cream: '#fff5f8',
+          },
+          ink: '#4a0e2a',
+          gold: '#ffc107',
+        },
+        fontFamily: {
+          sans: ['Poppins', 'system-ui', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+:root {
+  --rose: #e91e63;
+  --rose-d: #ad1457;
+  --rose-l: #f8bbd0;
+  --cream: #fff5f8;
+  --ink: #4a0e2a;
+  --gold: #ffc107;
+}
+
+body {
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(160deg, #fff5f8 0%, #fce4ec 50%, #f8bbd0 100%);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wheel-glow {
+  filter: drop-shadow(0 14px 28px rgba(173, 20, 87, 0.30));
+}
+
+.pointer-shadow {
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));
+}
+
+.btn-rose-gradient {
+  background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
+  box-shadow: 0 6px 0 #7b0a3b, 0 10px 20px rgba(173, 20, 87, 0.35);
+}
+
+.btn-rose-gradient:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #7b0a3b, 0 4px 10px rgba(173, 20, 87, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(248, 187, 208, 0.5);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.03); opacity: 0.9; }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* Custom scrollbar for table */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8bbd0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #ad1457;
+  border-radius: 4px;
+}
+</style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 antialiased selection:bg-pink-300">
+
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-pink-200 shadow-sm">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <!-- Brand Title -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#ad1457] to-[#e91e63] flex items-center justify-center text-white shadow-md font-black text-lg">
+        <i class="fa-solid fa-warehouse"></i>
+      </div>
+      <div>
+        <h1 class="font-extrabold text-sm md:text-base text-[#ad1457] leading-tight">Mini Bodegas Panamericana</h1>
+        <p class="text-xs text-pink-700 font-semibold flex items-center gap-1">
+          <span class="inline-block w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+          Promoción Buen Fin 2026
+        </p>
+      </div>
+    </div>
+
+    <!-- Mode Switcher Buttons -->
+    <div class="flex items-center bg-pink-100/80 p-1 rounded-xl border border-pink-200">
+      <button id="btn-mode-client" onclick="switchView('client')" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all duration-200 bg-[#ad1457] text-white shadow-sm flex items-center gap-1.5">
+        <i class="fa-solid fa-dharmachakra"></i>
+        <span>Ruleta</span>
+      </button>
+      <button id="btn-mode-staff" onclick="switchView('staff')" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-[#4a0e2a] hover:bg-pink-200/60 transition-all duration-200 flex items-center gap-1.5">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Staff / Ventas</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="flex-grow max-w-6xl w-full mx-auto p-3 sm:p-6">
+
+  <!-- ==================== CLIENT VIEW (RULETA) ==================== -->
+  <section id="view-client" class="block transition-all duration-300">
+    <div class="max-w-md mx-auto text-center space-y-4">
+      
+      <!-- Buen Fin Badge Header -->
+      <div class="inline-flex items-center gap-2 bg-[#ad1457] text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
+        <i class="fa-solid fa-tag text-amber-300"></i> Exclusivo Buen Fin
+      </div>
+
+      <div>
+        <h2 class="text-2xl sm:text-3xl font-black text-[#ad1457] tracking-tight leading-none">
+          ¡Gira la ruleta y gana tu descuento!
+        </h2>
+        <p class="text-xs sm:text-sm font-medium text-pink-900 mt-1">
+          Mini Bodegas Panamericana · 1 Giro por persona / dispositivo
+        </p>
+      </div>
+
+      <!-- Wheel Container -->
+      <div class="relative w-full max-w-[340px] sm:max-w-[380px] aspect-square mx-auto my-2">
+        <!-- Wheel Pointer -->
+        <div class="pointer-shadow absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[32px] border-t-[#4a0e2a]"></div>
+
+        <!-- Canvas Element -->
+        <canvas id="wheel" width="760" height="760" class="wheel-glow w-full h-full rounded-full cursor-pointer touch-none"></canvas>
+      </div>
+
+      <!-- Spin Action Button -->
+      <div class="pt-2">
+        <button id="spin" class="btn-rose-gradient w-full max-w-xs py-4 px-8 rounded-full text-white font-extrabold text-xl tracking-wide uppercase transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed">
+          ¡GIRAR AHORA!
+        </button>
+        
+        <!-- Anti-cheat Device Lock Status Banner -->
+        <div id="device-status-banner" class="mt-3 p-2.5 rounded-xl text-xs font-medium bg-pink-100/90 text-pink-900 border border-pink-200 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-shield-check text-[#ad1457]"></i>
+          <span id="note">Todos los giros ganan un descuento garantizado.</span>
+        </div>
+      </div>
+
+      <!-- Probability Table Accordion -->
+      <details class="glass-card rounded-2xl p-3 text-left shadow-sm border border-pink-200 transition-all">
+        <summary class="font-bold text-xs sm:text-sm text-[#ad1457] cursor-pointer flex items-center justify-between">
+          <span><i class="fa-solid fa-[#ad1457] fa-chart-pie mr-1.5"></i> Ver lista de premios y probabilidades</span>
+          <i class="fa-solid fa-chevron-down text-xs"></i>
+        </summary>
+        <div class="mt-3 overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr class="border-b border-pink-200 text-[#ad1457]">
+                <th class="py-1.5 px-2 font-bold">Descuento</th>
+                <th class="py-1.5 px-2 font-bold text-right">Probabilidad Real</th>
+              </tr>
+            </thead>
+            <tbody id="odds-body" class="divide-y divide-pink-100 text-slate-700 font-medium">
+              <!-- Populated via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- Legal Info -->
+      <p class="text-[11px] text-pink-900/70 leading-snug px-2 pt-2">
+        * Descuento aplicable a la renta de bodega, válido únicamente durante la promoción de Buen Fin. No acumulable con otras promociones. Registrado con firma de autenticidad en sistema.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== STAFF VIEW (CORROBORADOR DE CÓDIGOS) ==================== -->
+  <section id="view-staff" class="hidden space-y-6">
+    
+    <!-- Staff PIN Gate Overlay (Modal if unauthenticated staff) -->
+    <div id="staff-pin-modal" class="fixed inset-0 bg-[#4a0e2a]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-pink-200 text-center space-y-4">
+        <div class="w-16 h-16 bg-pink-100 text-[#ad1457] rounded-2xl flex items-center justify-center text-2xl mx-auto">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-[#ad1457]">Acceso Personal de Ventas</h3>
+          <p class="text-xs text-slate-500 mt-1">Ingresa el PIN de sucursal para verificar cupones</p>
+        </div>
+        <div>
+          <input type="password" id="staff-pin-input" placeholder="PIN de acceso" maxlength="10" 
+            class="w-full px-4 py-3 text-center text-xl font-bold tracking-widest border-2 border-pink-200 rounded-xl focus:outline-none focus:border-[#ad1457] transition-all"
+            onkeyup="if(event.key==='Enter') verifyStaffPin()">
+          <p id="staff-pin-error" class="text-xs text-red-600 font-bold mt-1.5 hidden">PIN incorrecto. Intenta de nuevo.</p>
+        </div>
+        <button onclick="verifyStaffPin()" class="w-full bg-[#ad1457] hover:bg-[#7b0a3b] text-white font-bold py-3 rounded-xl transition-all shadow-md">
+          Entrar al Panel
+        </button>
+      </div>
+    </div>
+
+    <!-- Staff Panel Header -->
+    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-pink-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> BD Firebase Conectada
+          </span>
+          <span class="bg-pink-100 text-[#ad1457] text-xs font-bold px-2.5 py-0.5 rounded-full">
+            Staff de Sucursal
+          </span>
+        </div>
+        <h2 class="text-2xl font-black text-[#ad1457] mt-1">Corroborador de Códigos & Canjes</h2>
+        <p class="text-xs text-slate-500">Verifica la autenticidad en tiempo real y evita fraudes con descuentos alterados</p>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-2">
+        <button onclick="exportCouponsCSV()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-file-csv text-emerald-600"></i> Exportar CSV
+        </button>
+        <button onclick="lockStaffPanel()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-pink-50 text-[#ad1457] hover:bg-pink-100 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-lock"></i> Bloquear Panel
+        </button>
+      </div>
+    </div>
+
+    <!-- Verification Search Engine Card -->
+    <div class="bg-gradient-to-br from-white to-pink-50/50 rounded-2xl p-5 sm:p-7 shadow-md border-2 border-pink-200 space-y-4">
+      <label class="block font-bold text-sm text-[#4a0e2a]">
+        <i class="fa-solid fa-magnifying-glass text-[#e91e63] mr-1.5"></i> Ingresa o Escanea el Código del Cliente
+      </label>
+      
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-grow">
+          <input type="text" id="verify-code-input" placeholder="Ejemplo: BF-A8K2P9" uppercase maxlength="12"
+            class="w-full px-4 py-3.5 pl-11 text-lg font-black tracking-widest text-[#4a0e2a] uppercase bg-white border-2 border-pink-300 rounded-xl focus:outline-none focus:border-[#ad1457] focus:ring-4 focus:ring-pink-100 transition-all"
+            oninput="this.value = this.value.toUpperCase()"
+            onkeyup="if(event.key==='Enter') checkCodeInDatabase()">
+          <i class="fa-solid fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 text-lg"></i>
+        </div>
+        <button onclick="checkCodeInDatabase()" class="bg-[#ad1457] hover:bg-[#7b0a3b] text-white font-black px-6 py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-shield-check"></i>
+          <span>VERIFICAR</span>
+        </button>
+      </div>
+
+      <!-- Search Verification Result Container -->
+      <div id="verify-result-container" class="hidden transition-all duration-300 pt-2">
+        <!-- Dynamically rendered verification card -->
+      </div>
+    </div>
+
+    <!-- Live Dashboard Statistics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-pink-200 shadow-sm">
+        <p class="text-xs text-slate-500 font-semibold">Total Generados</p>
+        <p id="stat-total" class="text-2xl sm:text-3xl font-black text-[#ad1457] mt-1">0</p>
+        <span class="text-[10px] text-pink-700 font-medium">En ruleta Buen Fin</span>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-pink-200 shadow-sm">
+        <p class="text-xs text-slate-500 font-semibold">Cupones Canjeados</p>
+        <p id="stat-redeemed" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">0</p>
+        <span class="text-[10px] text-emerald-700 font-medium">Validados en sucursal</span>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-pink-200 shadow-sm">
+        <p class="text-xs text-slate-500 font-semibold">Tasa de Conversión</p>
+        <p id="stat-[#ad1457]conversion" class="text-2xl sm:text-3xl font-black text-amber-500 mt-1">0%</p>
+        <span class="text-[10px] text-slate-400 font-medium">% de uso efectivo</span>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-pink-200 shadow-sm">
+        <p class="text-xs text-slate-500 font-semibold">Descuento Promedio</p>
+        <p id="stat-avg-discount" class="text-2xl sm:text-3xl font-black text-indigo-600 mt-1">0%</p>
+        <span class="text-[10px] text-slate-400 font-medium">Promedio otorgado</span>
+      </div>
+    </div>
+
+    <!-- Coupon History Table -->
+    <div class="bg-white rounded-2xl border border-pink-200 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-pink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="font-bold text-[#ad1457] text-base">Historial de Cupones en Base de Datos</h3>
+          <p class="text-xs text-slate-500">Listado sincrónico actualizado en tiempo real</p>
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="flex items-center gap-2">
+          <select id="filter-status" onchange="renderHistoryTable()" class="text-xs font-bold border border-pink-200 rounded-lg px-3 py-1.5 bg-pink-50 text-[#4a0e2a] focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <option value="all">Todos los estados</option>
+            <option value="valid">Solo Válidos (Sin Canjear)</option>
+            <option value="used">Solo Canjeados</option>
+          </select>
+          <input type="text" id="filter-search" oninput="renderHistoryTable()" placeholder="Filtrar por código..." class="text-xs font-semibold border border-pink-200 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-300 w-36">
+        </div>
+      </div>
+
+      <!-- Table Scrollable Body -->
+      <div class="overflow-x-auto max-h-[420px]">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-pink-50/80 sticky top-0 border-b border-pink-100 text-[#ad1457] font-bold uppercase tracking-wider">
+            <tr>
+              <th class="p-3">Código</th>
+              <th class="p-3">Descuento</th>
+              <th class="p-3">Estado</th>
+              <th class="p-3">Fecha Generado</th>
+              <th class="p-3">Sucursal / Detalles Canje</th>
+              <th class="p-3 text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body" class="divide-y divide-pink-50 text-slate-700 font-medium">
+            <!-- Populated via JS snapshot -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<div id="modal" class="fixed inset-0 bg-[#4a0e2a]/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+  <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl border-2 border-pink-200 transform scale-95 opacity-0 transition-all duration-300" id="modal-card">
+    
+    <div class="inline-block bg-pink-100 text-[#ad1457] text-xs font-extrabold px-3 py-1 rounded-full uppercase">
+      🎉 ¡Felicidades! Ganaste
+    </div>
+
+    <div>
+      <div id="prize" class="text-6xl font-black text-[#e91e63] tracking-tight my-1">
+        20%
+      </div>
+      <div class="text-sm font-bold text-[#4a0e2a]">de descuento en tu renta de bodega</div>
+    </div>
+
+    <!-- Code Display Badge -->
+    <div class="bg-[#fff5f8] border-2 border-dashed border-[#e91e63] rounded-2xl p-3 relative group">
+      <div class="text-[10px] text-pink-700 font-bold uppercase tracking-wider">Tu Código Único Registrado</div>
+      <div id="code" class="text-2xl font-black text-[#ad1457] tracking-widest my-1 font-mono">BF-000000</div>
+      <button onclick="copyCodeToClipboard()" class="text-xs bg-pink-200 hover:bg-pink-300 text-[#4a0e2a] font-bold px-3 py-1 rounded-lg transition-all flex items-center gap-1 mx-auto mt-1">
+        <i class="fa-solid fa-copy"></i> <span id="copy-text">Copiar Código</span>
+      </button>
+    </div>
+
+    <p class="text-xs text-slate-500 leading-snug">
+      Guarda este código o toma captura de pantalla. Présentalo en sucursal o por WhatsApp.
+    </p>
+
+    <!-- WhatsApp Share CTA Button -->
+    <a id="wa" href="#" target="_blank" rel="noopener" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
+      <i class="fa-brands fa-whatsapp text-lg"></i>
+      <span>Reclamar por WhatsApp</span>
+    </a>
+
+    <!-- Close Button -->
+    <button id="close" class="text-xs text-pink-800 font-bold hover:underline py-1 block w-full">
+      Cerrar ventana
+    </button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+var WHATSAPP_NUMBER = "524427749485";
+var STORAGE_KEY = "bf_minibodegas_ruleta_v2";
+var STAFF_PIN_PASS = "5310";
+
+var PRIZES = [
+  { d: 5,  p: 35 },
+  { d: 10, p: 30 },
+  { d: 15, p: 20 },
+  { d: 20, p: 10.05 },
+  { d: 25, p: 3 },
+  { d: 30, p: 1.5 },
+  { d: 40, p: 0.4 },
+  { d: 50, p: 0.05 }
+];
+
+var COLORS = ["#e91e63", "#f8bbd0", "#ad1457", "#f48fb1", "#e91e63", "#f8bbd0", "#ad1457", "#ffc107"];
+var TXT    = ["#ffffff", "#4a0e2a", "#ffffff", "#4a0e2a", "#ffffff", "#4a0e2a", "#ffffff", "#4a0e2a"];
+var N = PRIZES.length, SEG = 2 * Math.PI / N;
+
+// Audio FX Synthesizer using Web Audio API
+class AudioEffects {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+  playTick() {
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(580, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.03);
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.03);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.03);
+    } catch(e) {}
+  }
+  playWin() {
+    if (!this.ctx) return;
+    try {
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.4);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(this.ctx.currentTime + idx * 0.1);
+        osc.stop(this.ctx.currentTime + idx * 0.1 + 0.4);
+      });
+    } catch(e) {}
+  }
+}
+
+var soundFX = new AudioEffects();
+
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'minibodegas-buenfin';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+  apiKey: "AIzaSyDemoKeyForTestingPurposeOnly12345",
+  authDomain: "demo-app.firebaseapp.com",
+  projectId: "demo-app",
+  storageBucket: "demo-app.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:123456789"
+};
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let allCouponsList = []; // Memory cached list for client sorting/filtering
+
+async function initAuth() {
+  try {
+    if (initialAuthToken) {
+      const userCred = await signInWithCustomToken(auth, initialAuthToken);
+      currentUser = userCred.user;
+    } else {
+      const userCred = await signInAnonymously(auth);
+      currentUser = userCred.user;
+    }
+    console.log("Firebase Auth established for user:", currentUser.uid);
+    subscribeToCouponsRealtime();
+  } catch (err) {
+    console.warn("Auth initial error, falling back to anonymous:", err);
+    try {
+      const userCred = await signInAnonymously(auth);
+      currentUser = userCred.user;
+      subscribeToCouponsRealtime();
+    } catch(e) {
+      console.error("Auth completely failed:", e);
+    }
+  }
+}
+
+// MANDATORY RULE 1 Strict Path: /artifacts/{appId}/public/data/coupons
+function getCouponsCollectionRef() {
+  return collection(db, 'artifacts', appId, 'public', 'data', 'coupons');
+}
+
+function getCouponDocRef(code) {
+  return doc(db, 'artifacts', appId, 'public', 'data', 'coupons', code.trim().toUpperCase());
+}
+
+function subscribeToCouponsRealtime() {
+  if (!currentUser) return;
+  
+  onSnapshot(getCouponsCollectionRef(), (snapshot) => {
+    allCouponsList = [];
+    snapshot.forEach((docSnap) => {
+      allCouponsList.push(docSnap.data());
+    });
+    
+    // Sort in memory descending by timestamp
+    allCouponsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    
+    // Update Staff Dashboard Stats & History Table
+    updateDashboardStats();
+    renderHistoryTable();
+    checkExistingFingerprintSpin();
+  }, (error) => {
+    console.error("Error loading coupons from Firebase:", error);
+  });
+}
+
+// Calculates a deterministic checksum to detect manual code manipulation
+function generateSecureCode(discount) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let randomPart = "";
+  const randomValues = new Uint32Array(4);
+  crypto.getRandomValues(randomValues);
+  for (let i = 0; i < 4; i++) {
+    randomPart += chars[randomValues[i] % chars.length];
+  }
+  
+  // Calculate checksum character pair
+  const secretSalt = 7919;
+  let sum = discount * secretSalt;
+  for (let i = 0; i < randomPart.length; i++) {
+    sum += randomPart.charCodeAt(i) * (i + 1) * 31;
+  }
+  const checksumChar1 = chars[Math.abs(sum) % chars.length];
+  const checksumChar2 = chars[Math.abs(sum * 7) % chars.length];
+  
+  return `BF-${randomPart}${checksumChar1}${checksumChar2}`;
+}
+
+function verifyCodeIntegrity(code, discount) {
+  if (!code || !code.startsWith("BF-") || code.length !== 9) return false;
+  const randomPart = code.substring(3, 7);
+  const checksumChars = code.substring(7, 9);
+  
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const secretSalt = 7919;
+  let sum = discount * secretSalt;
+  for (let i = 0; i < randomPart.length; i++) {
+    sum += randomPart.charCodeAt(i) * (i + 1) * 31;
+  }
+  const expectedChar1 = chars[Math.abs(sum) % chars.length];
+  const expectedChar2 = chars[Math.abs(sum * 7) % chars.length];
+  
+  return checksumChars === `${expectedChar1}${expectedChar2}`;
+}
+
+// Generate device fingerprint via Canvas + WebGL + Screen features
+function getDeviceFingerprint() {
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = "top";
+    ctx.font = "14px 'Poppins', 'Arial'";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = "#069";
+    ctx.fillText("Panamericana-BuenFin-2026", 2, 15);
+    const str = canvas.toDataURL() + (navigator.userAgent || '') + (screen.width || '0') + 'x' + (screen.height || '0') + (navigator.language || '');
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return 'fp_' + Math.abs(hash).toString(36);
+  } catch (e) {
+    return 'fp_' + Math.random().toString(36).substring(2, 10);
+  }
+}
+
+function storeLocal(get, val) {
+  try {
+    if (get) return JSON.parse(localStorage.getItem(STORAGE_KEY));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+  } catch (e) { return null; }
+}
+
+var cv = document.getElementById("wheel"), ctx = cv.getContext("2d");
+var spinBtn = document.getElementById("spin"), modal = document.getElementById("modal");
+var rot = 0, spinning = false, lastSegmentIndex = -1;
+
+function drawWheel() {
+  var s = cv.width, c = s / 2, r = c - 18;
+  ctx.clearRect(0, 0, s, s);
+  
+  ctx.save();
+  ctx.translate(c, c);
+  ctx.rotate(rot);
+
+  for (var i = 0; i < N; i++) {
+    var angle = i * SEG;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, r, angle, angle + SEG);
+    ctx.closePath();
+    
+    // Segment color fill
+    ctx.fillStyle = COLORS[i];
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Segment Text
+    ctx.save();
+    ctx.rotate(angle + SEG / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = TXT[i];
+    ctx.font = "800 52px Poppins, system-ui, sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.2)";
+    ctx.shadowBlur = 4;
+    ctx.fillText(PRIZES[i].d + "%", r - 32, 0);
+    ctx.restore();
+  }
+
+  // Outer rim studs / dots
+  for (var j = 0; j < N * 2; j++) {
+    var studAngle = j * (Math.PI / N);
+    var sx = (r + 8) * Math.cos(studAngle);
+    var sy = (r + 8) * Math.sin(studAngle);
+    ctx.beginPath();
+    ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#ad1457";
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  // Center Metallic Wheel Cap
+  ctx.beginPath();
+  ctx.arc(c, c, 52, 0, 2 * Math.PI);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "#ad1457";
+  ctx.stroke();
+
+  ctx.fillStyle = "#ad1457";
+  ctx.font = "900 20px Poppins, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("BUEN", c, c - 10);
+  ctx.fillText("FIN", c, c + 14);
+}
+
+function rand() {
+  var a = new Uint32Array(1);
+  crypto.getRandomValues(a);
+  return a[0] / 4294967296;
+}
+
+function pickPrizeByProbability() {
+  var u = rand() * 100, acc = 0;
+  for (var i = 0; i < N; i++) {
+    acc += PRIZES[i].p;
+    if (u < acc) return i;
+  }
+  return 0;
+}
+
+async function finishSpin(prizeIdx) {
+  var prize = PRIZES[prizeIdx];
+  var generatedCode = generateSecureCode(prize.d);
+  var fp = getDeviceFingerprint();
+
+  var couponRecord = {
+    code: generatedCode,
+    discount: prize.d,
+    createdAt: new Date().toISOString(),
+    timestamp: Date.now(),
+    used: false,
+    usedAt: null,
+    usedByBranch: null,
+    notes: "",
+    fingerprint: fp,
+    userAgent: navigator.userAgent.substring(0, 100)
+  };
+
+  // 1. Store in LocalStorage
+  storeLocal(false, couponRecord);
+
+  // 2. Save directly to Firebase Firestore
+  if (currentUser) {
+    try {
+      await setDoc(getCouponDocRef(generatedCode), couponRecord);
+      console.log("Coupon successfully registered in Firebase DB:", generatedCode);
+    } catch (err) {
+      console.error("Error writing coupon to Firebase:", err);
+    }
+  }
+
+  // 3. UI Update
+  spinBtn.disabled = false;
+  spinBtn.textContent = "VER MI PREMIO";
+  spinBtn.dataset.done = "1";
+  document.getElementById("note").textContent = "Ya usaste tu giro. ¡Código registrado en sistema!";
+
+  soundFX.playWin();
+  
+  // Trigger Confetti Animation
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount: 120,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  }
+
+  showWinnerModal(couponRecord);
+}
+
+function showWinnerModal(res) {
+  document.getElementById("prize").textContent = res.discount + "%";
+  document.getElementById("code").textContent = res.code;
+  var wa = document.getElementById("wa");
+  
+  if (WHATSAPP_NUMBER) {
+    var msg = "¡Hola! Giré la ruleta del Buen Fin de Mini Bodegas Panamericana y gané " + res.discount + "% de descuento. Mi código verificado es: " + res.code;
+    wa.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg);
+  } else {
+    wa.style.display = "none";
+  }
+
+  var modal = document.getElementById("modal");
+  var modalCard = document.getElementById("modal-card");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  
+  setTimeout(() => {
+    modalCard.classList.remove("scale-95", "opacity-0");
+    modalCard.classList.add("scale-100", "opacity-100");
+  }, 10);
+}
+
+function closeWinnerModal() {
+  var modal = document.getElementById("modal");
+  var modalCard = document.getElementById("modal-card");
+  modalCard.classList.remove("scale-100", "opacity-100");
+  modalCard.classList.add("scale-95", "opacity-0");
+  setTimeout(() => {
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+  }, 300);
+}
+
+spinBtn.addEventListener("click", function() {
+  soundFX.init();
+
+  if (spinBtn.dataset.done === "1") {
+    var r = storeLocal(true);
+    if (r) showWinnerModal(r);
+    return;
+  }
+
+  if (spinning) return;
+
+  // Double check fingerprint in Firebase DB before allowing spin
+  var fp = getDeviceFingerprint();
+  var existingDbCoupon = allCouponsList.find(c => c.fingerprint === fp);
+  if (existingDbCoupon) {
+    storeLocal(false, existingDbCoupon);
+    spinBtn.textContent = "VER MI PREMIO";
+    spinBtn.dataset.done = "1";
+    document.getElementById("note").textContent = "Se detectó un premio registrado previamente en este dispositivo.";
+    showWinnerModal(existingDbCoupon);
+    return;
+  }
+
+  spinning = true;
+  spinBtn.disabled = true;
+  spinBtn.textContent = "GIRANDO...";
+
+  var i = pickPrizeByProbability();
+  var jitter = (rand() - 0.5) * SEG * 0.6;
+  var base = (((-Math.PI / 2 - (i + 0.5) * SEG - jitter) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  var targetRotations = 2 * Math.PI * 7 + base;
+  var duration = 5400;
+  var start = performance.now();
+
+  (function animateSpin(now) {
+    var elapsed = Math.min(1, (now - start) / duration);
+    // Cubic ease out
+    var ease = 1 - Math.pow(1 - elapsed, 3.5);
+    rot = targetRotations * ease;
+    drawWheel();
+
+    // Play ticking sound when passing wheel segment pins
+    var currentSegment = Math.floor(((rot % (2 * Math.PI)) / (2 * Math.PI)) * N);
+    if (currentSegment !== lastSegmentIndex) {
+      soundFX.playTick();
+      lastSegmentIndex = currentSegment;
+    }
+
+    if (elapsed < 1) {
+      requestAnimationFrame(animateSpin);
+    } else {
+      spinning = false;
+      finishSpin(i);
+    }
+  })(start);
+});
+
+document.getElementById("close").addEventListener("click", closeWinnerModal);
+
+// Check existing spin on device
+function checkExistingFingerprintSpin() {
+  var prev = storeLocal(true);
+  var fp = getDeviceFingerprint();
+  
+  var foundInDb = allCouponsList.find(c => c.fingerprint === fp || (prev && c.code === prev.code));
+  var existing = prev || foundInDb;
+
+  if (existing) {
+    spinBtn.textContent = "VER MI PREMIO";
+    spinBtn.dataset.done = "1";
+    document.getElementById("note").textContent = "Ya usaste tu giro en este dispositivo. Código: " + existing.code;
+  }
+}
+
+// Populate Odds Table
+function renderOddsTable() {
+  var html = "";
+  PRIZES.forEach(function(p) {
+    html += `
+      <tr>
+        <td class="py-1.5 px-2 font-bold text-[#ad1457]">${p.d}% de Descuento</td>
+        <td class="py-1.5 px-2 text-right font-mono">${p.p}%</td>
+      </tr>
+    `;
+  });
+  document.getElementById("odds-body").innerHTML = html;
+}
+
+window.copyCodeToClipboard = function() {
+  var codeText = document.getElementById("code").textContent;
+  var tempInput = document.createElement("input");
+  tempInput.value = codeText;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  try {
+    document.execCommand("copy");
+    document.getElementById("copy-text").textContent = "¡Copiado!";
+    setTimeout(() => {
+      document.getElementById("copy-text").textContent = "Copiar Código";
+    }, 2000);
+  } catch (err) {
+    console.error("Copy failed", err);
+  }
+  document.body.removeChild(tempInput);
+};
+
+/* ==================== STAFF ADMIN VERIFIER LOGIC ==================== */
+
+window.switchView = function(viewName) {
+  var btnClient = document.getElementById("btn-mode-client");
+  var btnStaff = document.getElementById("btn-mode-staff");
+  var viewClient = document.getElementById("view-client");
+  var viewStaff = document.getElementById("view-staff");
+
+  if (viewName === 'client') {
+    viewClient.classList.remove("hidden");
+    viewStaff.classList.add("hidden");
+    btnClient.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all duration-200 bg-[#ad1457] text-white shadow-sm flex items-center gap-1.5";
+    btnStaff.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-[#4a0e2a] hover:bg-pink-200/60 transition-all duration-200 flex items-center gap-1.5";
+  } else {
+    viewClient.classList.add("hidden");
+    viewStaff.classList.remove("hidden");
+    btnStaff.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all duration-200 bg-[#ad1457] text-white shadow-sm flex items-center gap-1.5";
+    btnClient.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-[#4a0e2a] hover:bg-pink-200/60 transition-all duration-200 flex items-center gap-1.5";
+    
+    // Check PIN lock state
+    if (sessionStorage.getItem("staff_unlocked") !== "1") {
+      document.getElementById("staff-pin-modal").classList.remove("hidden");
+      document.getElementById("staff-pin-modal").classList.add("flex");
+    }
+  }
+};
+
+window.verifyStaffPin = function() {
+  var pinInput = document.getElementById("staff-pin-input");
+  var errorMsg = document.getElementById("staff-pin-error");
+  if (pinInput.value === STAFF_PIN_PASS) {
+    sessionStorage.setItem("staff_unlocked", "1");
+    document.getElementById("staff-pin-modal").classList.remove("flex");
+    document.getElementById("staff-pin-modal").classList.add("hidden");
+    pinInput.value = "";
+    errorMsg.classList.add("hidden");
+  } else {
+    errorMsg.classList.remove("hidden");
+  }
+};
+
+window.lockStaffPanel = function() {
+  sessionStorage.removeItem("staff_unlocked");
+  document.getElementById("staff-pin-modal").classList.remove("hidden");
+  document.getElementById("staff-pin-modal").classList.add("flex");
+};
+
+window.checkCodeInDatabase = async function(codeToTest) {
+  var inputEl = document.getElementById("verify-code-input");
+  var searchCode = (codeToTest || inputEl.value).trim().toUpperCase();
+  var container = document.getElementById("verify-result-container");
+
+  if (!searchCode) {
+    container.innerHTML = `
+      <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+        ⚠️ Ingresa un código válido para consultar (Ejemplo: BF-A8K2P9)
+      </div>
+    `;
+    container.classList.remove("hidden");
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="p-6 text-center text-pink-800 font-bold text-sm bg-white rounded-xl border border-pink-200">
+      <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-[#ad1457]"></i>
+      <p>Consultando base de datos Firebase...</p>
+    </div>
+  `;
+  container.classList.remove("hidden");
+
+  // Fetch document from Firebase
+  let couponData = null;
+  if (currentUser) {
+    try {
+      const docSnap = await getDoc(getCouponDocRef(searchCode));
+      if (docSnap.exists()) {
+        couponData = docSnap.data();
+      }
+    } catch (e) {
+      console.error("Firebase read error:", e);
+    }
+  }
+
+  // Fallback to memory cache list
+  if (!couponData) {
+    couponData = allCouponsList.find(c => c.code === searchCode);
+  }
+
+  // Render Verification Status
+  if (!couponData) {
+    // Check if checksum algorithm reveals it was fake/tampered
+    container.innerHTML = `
+      <div class="p-5 rounded-2xl bg-red-50 border-2 border-red-300 text-red-900 space-y-2">
+        <div class="flex items-center gap-2 text-base font-extrabold text-red-600">
+          <i class="fa-solid fa-circle-xmark text-xl"></i>
+          <span>CÓDIGO INEXISTENTE O NO REGISTRADO ❌</span>
+        </div>
+        <p class="text-xs text-red-700 font-medium">
+          El código <strong class="font-mono text-sm">${searchCode}</strong> no existe en la base de datos oficial. Es posible que haya sido alterado o inventado.
+        </p>
+      </div>
+    `;
+    return;
+  }
+
+  // Verify HMAC checksum signature against recorded discount
+  var checksumValid = verifyCodeIntegrity(couponData.code, couponData.discount);
+
+  if (couponData.used) {
+    // Already Redeemed State ⚠️
+    container.innerHTML = `
+      <div class="p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-900 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-base font-extrabold text-amber-700">
+            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+            <span>CÓDIGO YA CANJEADO PREVIAMENTE ⚠️</span>
+          </div>
+          <span class="bg-amber-200 text-amber-900 text-xs font-black px-3 py-1 rounded-full uppercase">INVALIDO PARA REUSO</span>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white/80 p-3 rounded-xl text-xs border border-amber-200">
+          <div><span class="text-slate-400 block font-semibold">Descuento:</span> <strong class="text-base font-black text-amber-800">${couponData.discount}% OFF</strong></div>
+          <div><span class="text-slate-400 block font-semibold">Fecha de Canje:</span> <strong>${couponData.usedAt ? new Date(couponData.usedAt).toLocaleString('es-MX') : 'N/A'}</strong></div>
+          <div><span class="text-slate-400 block font-semibold">Sucursal / Atendió:</span> <strong>${couponData.usedByBranch || 'Sucursal General'}</strong></div>
+        </div>
+
+        ${couponData.notes ? `<p class="text-xs italic text-amber-800">Nota: ${couponData.notes}</p>` : ''}
+      </div>
+    `;
+  } else {
+    // Valid Coupon Available for Redemption ✅
+    container.innerHTML = `
+      <div class="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-base sm:text-lg font-black text-emerald-700">
+            <i class="fa-solid fa-[#ad1457] fa-circle-check text-2xl text-emerald-500"></i>
+            <span>CÓDIGO VÁLIDO & AUTÉNTICO ✅</span>
+          </div>
+          <span class="bg-emerald-200 text-emerald-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Listo para aplicar</span>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="text-xs text-slate-400 font-bold uppercase">Premio Otorgado por Sistema</div>
+            <div class="text-3xl font-black text-[#ad1457]">${couponData.discount}% DE DESCUENTO</div>
+            <div class="text-xs text-slate-500 mt-0.5">Generado el: ${new Date(couponData.createdAt).toLocaleString('es-MX')}</div>
+          </div>
+          <div class="text-right">
+            <span class="inline-block text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 font-mono">
+              Firma Checksum: ${checksumValid ? 'VÁLIDA ✓' : 'NO COINCIDE ⚠️'}
+            </span>
+          </div>
+        </div>
+
+        <!-- Redemption Action Form -->
+        <div class="bg-white/80 p-4 rounded-xl border border-emerald-200 space-y-3">
+          <h4 class="font-bold text-xs text-emerald-900 uppercase">Registrar Aplicación de Descuento</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" id="redeem-branch-input" placeholder="Nombre de Sucursal / Agente" class="px-3 py-2 text-xs border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+            <input type="text" id="redeem-notes-input" placeholder="Folio de Contrato o Nota extra (Opcional)" class="px-3 py-2 text-xs border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+          </div>
+          <button onclick="markCouponAsRedeemed('${couponData.code}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm">
+            <i class="fa-solid fa-check-double"></i>
+            <span>MARCAR COMO CANJEADO EN BASE DE DATOS</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+};
+
+window.markCouponAsRedeemed = async function(code) {
+  var branchInput = document.getElementById("redeem-branch-input");
+  var notesInput = document.getElementById("redeem-notes-input");
+
+  var branch = (branchInput ? branchInput.value.trim() : "") || "Sucursal Ventas";
+  var notes = notesInput ? notesInput.value.trim() : "";
+
+  var updateData = {
+    used: true,
+    usedAt: new Date().toISOString(),
+    usedByBranch: branch,
+    notes: notes
+  };
+
+  try {
+    await updateDoc(getCouponDocRef(code), updateData);
+    console.log("Coupon marked as redeemed:", code);
+    
+    // Re-trigger verification UI check
+    window.checkCodeInDatabase(code);
+  } catch (err) {
+    console.error("Error updating redemption in Firebase:", err);
+  }
+};
+
+function updateDashboardStats() {
+  var total = allCouponsList.length;
+  var redeemed = allCouponsList.filter(c => c.used).length;
+  var conversion = total > 0 ? ((redeemed / total) * 100).toFixed(1) : "0";
+  
+  var sumDiscount = allCouponsList.reduce((acc, c) => acc + (c.discount || 0), 0);
+  var avgDiscount = total > 0 ? (sumDiscount / total).toFixed(1) : "0";
+
+  document.getElementById("stat-total").textContent = total;
+  document.getElementById("stat-redeemed").textContent = redeemed;
+  document.getElementById("stat-[#ad1457]conversion").textContent = conversion + "%";
+  document.getElementById("stat-avg-discount").textContent = avgDiscount + "%";
+}
+
+window.renderHistoryTable = function() {
+  var tbody = document.getElementById("history-table-body");
+  var statusFilter = document.getElementById("filter-status").value;
+  var searchFilter = document.getElementById("filter-search").value.trim().toUpperCase();
+
+  var filtered = allCouponsList.filter(c => {
+    var matchStatus = (statusFilter === 'all') || 
+                      (statusFilter === 'valid' && !c.used) || 
+                      (statusFilter === 'used' && c.used);
+    var matchSearch = !searchFilter || (c.code && c.code.includes(searchFilter));
+    return matchStatus && matchSearch;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="p-6 text-center text-slate-400 font-semibold italic">
+          No se encontraron cupones registrados con estos filtros.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  var html = "";
+  filtered.forEach(c => {
+    var statusBadge = c.used 
+      ? `<span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check"></i> Canjeado</span>`
+      : `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-circle"></i> Válido</span>`;
+
+    html += `
+      <tr class="hover:bg-pink-50/50 transition-colors">
+        <td class="p-3 font-mono font-bold text-[#ad1457]">${c.code}</td>
+        <td class="p-3 font-black text-slate-800">${c.discount}% OFF</td>
+        <td class="p-3">${statusBadge}</td>
+        <td class="p-3 text-slate-500 text-[11px]">${c.createdAt ? new Date(c.createdAt).toLocaleString('es-MX') : 'N/A'}</td>
+        <td class="p-3 text-slate-600 text-[11px]">${c.used ? (c.usedByBranch || 'Sucursal') + ' - ' + (c.usedAt ? new Date(c.usedAt).toLocaleDateString('es-MX') : '') : '—'}</td>
+        <td class="p-3 text-right">
+          <button onclick="document.getElementById('verify-code-input').value='${c.code}'; switchView('staff'); checkCodeInDatabase('${c.code}');" class="text-[11px] font-bold text-[#ad1457] hover:underline bg-pink-100 px-2.5 py-1 rounded-md">
+            Ver / Canjear
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+};
+
+window.exportCouponsCSV = function() {
+  if (allCouponsList.length === 0) {
+    alert("No hay cupones para exportar.");
+    return;
+  }
+
+  var csvRows = ["Código,Descuento,Estado,Fecha Generado,Fecha Canje,Sucursal,Notas"];
+  allCouponsList.forEach(c => {
+    var row = [
+      c.code,
+      c.discount + "%",
+      c.used ? "CANJEADO" : "VALIDO",
+      c.createdAt || "",
+      c.usedAt || "",
+      `"${(c.usedByBranch || '').replace(/"/g, '""')}"`,
+      `"${(c.notes || '').replace(/"/g, '""')}"`
+    ];
+    csvRows.push(row.join(","));
+  });
+
+  var csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+  var encodedUri = encodeURI(csvContent);
+  var link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `Cupones_BuenFin_Panamericana_${new Date().toISOString().substring(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+window.onload = function() {
+  renderOddsTable();
+  drawWheel();
+  initAuth();
+  
+  // Re-draw wheel on window resize
+  window.addEventListener("resize", drawWheel);
+};
+
+</script>
+</body>
+</html>
