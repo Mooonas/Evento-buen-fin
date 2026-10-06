@@ -200,33 +200,45 @@ th{color:var(--rose-d);font-weight:700}
     </div>
   </div>
 </div>
-
-<!-- Firebase SDK Module -->
+<!-- Firebase SDK Module con credenciales reales del proyecto -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Configuración de Firebase Firestore
+// Credenciales extraídas de tu proyecto minibodegas-buenfin
 const firebaseConfig = {
-  apiKey: "AIzaSyDDummyKeyForPublicFirestore",
+  apiKey: "AIzaSyBjNHfGakgiGCcP8vgUZGJFzAKk62ONSFE",
   authDomain: "minibodegas-buenfin.firebaseapp.com",
   projectId: "minibodegas-buenfin",
-  storageBucket: "minibodegas-buenfin.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  storageBucket: "minibodegas-buenfin.firebasestorage.app",
+  messagingSenderId: "541940352835",
+  appId: "1:541940352835:web:34c595d1999f25945551f6",
+  measurementId: "G-V1L4HCYQXP"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const COLLECTION_NAME = "bf_coupons_2026";
 
-// Global FireStore Helpers para integración con JS Tradicional
+// Guardar cupón y registrar log de variables al girar la ruleta
 window.saveCouponToFirebase = async function(couponData) {
   try {
-    await setDoc(doc(db, COLLECTION_NAME, couponData.code), couponData);
+    console.log("💾 Enviando datos a Firestore...", couponData);
+    
+    await setDoc(doc(db, COLLECTION_NAME, couponData.code), {
+      code: couponData.code,
+      discount: couponData.d,
+      status: couponData.status || "VALID",
+      createdAt: couponData.createdAt,
+      timestamp: couponData.timestamp,
+      userAgent: navigator.userAgent,
+      platform: navigator.platform
+    });
+
+    console.log("✅ Guardado exitoso en Firebase Firestore para el código:", couponData.code);
     return true;
-  } catch (e) {
-    console.warn("Respaldo Firestore activo en modo local.", e);
+  } catch (error) {
+    console.error("❌ Error al guardar en Firebase Firestore:", error);
     return false;
   }
 };
@@ -239,7 +251,7 @@ window.getCouponFromFirebase = async function(code) {
       return docSnap.data();
     }
   } catch (e) {
-    console.warn("Error leyendo Firestore", e);
+    console.error("Error leyendo código de Firestore:", e);
   }
   return null;
 };
@@ -249,26 +261,31 @@ window.redeemCouponInFirebase = async function(code, agentInfo) {
     const docRef = doc(db, COLLECTION_NAME, code);
     await updateDoc(docRef, {
       status: "USED",
-      usedAt: new Date().toISOString(),
+      usedAt: new Date().toLocaleDateString('es-MX') + " " + new Date().toLocaleTimeString('es-MX'),
+      usedTimestamp: Date.now(),
       agent: agentInfo || "Sucursal"
     });
+    console.log("✅ Estado actualizado a USED para el código:", code);
     return true;
   } catch (e) {
-    console.warn("Error actualizando canje", e);
+    console.error("Error al actualizar estado en Firestore:", e);
     return false;
   }
 };
 
 window.listenToCoupons = function(callback) {
   try {
-    const q = query(collection(db, COLLECTION_NAME), orderBy("timestamp", "desc"), limit(50));
+    const q = query(collection(db, COLLECTION_NAME), orderBy("timestamp", "desc"), limit(100));
     return onSnapshot(q, (snapshot) => {
       const coupons = [];
       snapshot.forEach((doc) => coupons.push(doc.data()));
+      console.log("📡 Datos actualizados en vivo recibidos:", coupons.length, "registros");
       callback(coupons);
+    }, (error) => {
+      console.error("Error en el oyente (listener) de Firestore:", error);
     });
   } catch(e) {
-    console.warn("Modo suscripción offline activo.");
+    console.error("Excepción en la suscripción de Firestore:", e);
   }
 };
 </script>
